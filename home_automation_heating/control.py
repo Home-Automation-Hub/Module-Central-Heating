@@ -1,4 +1,4 @@
-import mqtt
+from home_automation_hub import mqtt
 import time
 from . import storage, websockets as ws
 import statistics

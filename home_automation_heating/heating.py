@@ -1,4 +1,4 @@
-import mqtt
+from home_automation_hub import mqtt
 import math
 from flask import render_template, Blueprint
 from . import storage, websockets, control, web

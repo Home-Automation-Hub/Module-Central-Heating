@@ -1,4 +1,4 @@
-from storage import ModuleStorage
+from home_automation_hub import storage
 
 instance = None
 
@@ -41,7 +41,7 @@ def get(key):
 
 def initialise(module_id):
     global instance
-    instance = ModuleStorage(module_id)
+    instance = storage.ModuleStorage(module_id)
     set_default_values()
 
 def store_temperature_reading(reading):

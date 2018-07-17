@@ -1,4 +1,4 @@
-import web
+from home_automation_hub import web
 from flask import render_template, request, jsonify
 from . import storage, control, websockets as ws
 from uuid import uuid4

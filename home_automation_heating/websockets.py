@@ -1,4 +1,4 @@
-from websocket import ModuleWebsocket
+from home_automation_hub import websocket
 from . import storage
 
 ws = None
@@ -16,4 +16,4 @@ def push_state():
 
 def initialise(module_id):
     global ws, storage
-    ws = ModuleWebsocket(module_id)    
+    ws = websocket.ModuleWebsocket(module_id)    
