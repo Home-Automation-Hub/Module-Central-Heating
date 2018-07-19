@@ -8,7 +8,8 @@ import datetime
 import dateutil.parser
 
 def view_index():
-    ch_is_on=storage.get("ch_is_on")
+    ch_set_on=storage.get("ch_set_on")
+    ch_running=storage.get("ch_running")
     control_mode=storage.get("control_mode")
     temperature=storage.get("temperature")
     thermostat_temperature = float(storage.get("thermostat_temperature"))
@@ -16,8 +17,9 @@ def view_index():
     manual_control_state, manual_state_message = \
             control.generate_manual_state_message()
 
-    return render_template("heating/index.html", ch_is_on=ch_is_on,
-                           temperature=temperature, control_mode=control_mode,
+    return render_template("heating/index.html", ch_set_on=ch_set_on,
+                           ch_running=ch_running, temperature=temperature,
+                           control_mode=control_mode,
                            manual_control_state=manual_control_state,
                            manual_state_message=manual_state_message,
                            thermostat_temperature=thermostat_temperature)
@@ -43,15 +45,6 @@ def view_timers():
     timers.append({"isTemplate": True, "days": {}})
 
     return render_template("heating/timers.html", timers=timers)
-
-def action_toggle_heating():
-    ch_is_on=storage.get("ch_is_on")
-    if ch_is_on:
-        control.heating_off()
-    else:
-        control.heating_on()
-
-    return ""
 
 def action_save_control_mode():
     request_data = request.get_json()
@@ -262,8 +255,6 @@ def initialise(module_id):
     web.add_endpoint(module_id, "/", view_index, ["GET"])
     web.add_endpoint(module_id, "/timers/", view_timers, ["GET"])
     web.add_endpoint(module_id, "/settings/", view_settings, ["GET"])
-    web.add_endpoint(module_id, "/action/toggle_heating/",
-            action_toggle_heating, ["POST"])
     web.add_endpoint(module_id, "/action/save_timers/",
             action_save_timers, ["POST"])
     web.add_endpoint(module_id, "/action/save_control_mode/",

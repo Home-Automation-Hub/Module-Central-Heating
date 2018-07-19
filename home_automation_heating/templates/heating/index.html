@@ -3,18 +3,6 @@
 {% block card_title %}Central Heating{% endblock %}
 
 {% block card_content %}  
-    <div class="float-right">
-        <span class="badge badge-success{% if not ch_is_on %} d-none{% endif %}" id="badge_heating_on">Heating is on</span>
-        <span class="badge badge-danger{% if ch_is_on %} d-none{% endif %}" id="badge_heating_off">Heating is off</span>
-        <button class="btn btn-secondary" id="btn_toggle_heating">
-            {% if ch_is_on %}
-                Turn Off
-            {% else %}
-                Turn On
-            {% endif %}
-        </button>
-    </div>
-
     <div class="card col-md-8 offset-md-2">
         <div class="card-body">
             <div class="text-center">
@@ -72,24 +60,16 @@
                         </div>
                     </div>
                 </div>
+                <p class="mt-2 mb-1"><strong>Current Temperature:</strong> <span id="val-temperature">{{ temperature }}</span>&deg;c</p>
+                <p>
+                    <strong>Heating State: </strong>
+                    <span id="heating-state-off" class="badge badge-danger{% if ch_set_on %} d-none{% endif %}">Off</span>
+                    <span id="heating-state-set-on" class="badge badge-warning{% if not(ch_set_on and not ch_running) %} d-none{% endif %}">On: Boiler not running</span>
+                    <span id="heating-state-running" class="badge badge-success{% if not ch_running %} d-none{% endif %}">On: Boiler running</span>
+                </p>
             </div>
         </div>
     </div>
-
-    <table class="table">
-        <thead class="thead-dark">
-            <tr>
-                <th>Temperature</th>
-                <th>CH Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><span id="val-temperature">{{ temperature }}</span>&deg;c</td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
 {% endblock %}
 
 {% block module_scripts %}

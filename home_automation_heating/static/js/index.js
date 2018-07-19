@@ -3,16 +3,20 @@ window.app.registerModuleWebsocketEndpoint(function(key, data) {
 }, "temperature");
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
-    // if (data["ch_is_on"]) {
-    //     jQuery("#btn_toggle_heating").text("Turn Off");
-    //     jQuery("#badge_heating_on").removeClass("d-none");
-    //     jQuery("#badge_heating_off").addClass("d-none");
-    // } else {
-    //     jQuery("#btn_toggle_heating").text("Turn On");
-    //     jQuery("#badge_heating_on").addClass("d-none");
-    //     jQuery("#badge_heating_off").removeClass("d-none");
-    // }
-    console.log(data);
+    jQuery("#heating-state-off").addClass("d-none");
+    jQuery("#heating-state-set-on").addClass("d-none");
+    jQuery("#heating-state-running").addClass("d-none");
+
+    var ch_set_on = data["ch_set_on"];
+    var ch_running = data["ch_running"];
+
+    if (!ch_set_on) {
+        jQuery("#heating-state-off").removeClass("d-none");
+    } else if (ch_running) {
+        jQuery("#heating-state-running").removeClass("d-none");
+    } else {
+        jQuery("#heating-state-set-on").removeClass("d-none");
+    }
 }, "state");
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
@@ -52,10 +56,6 @@ window.app.registerModuleWebsocketEndpoint(function(key, data) {
         jQuery("#control-mode-timer input").prop("checked", true);
     }
 }, "controlModeModified");
-
-jQuery("#btn_toggle_heating").click(function() {
-    jQuery.post(app.vars.moduleBasePath + "/action/toggle_heating/");
-});
 
 jQuery("#toggle-control-mode input").change(function() {
     var controlMode = jQuery(this).attr("data-mode");

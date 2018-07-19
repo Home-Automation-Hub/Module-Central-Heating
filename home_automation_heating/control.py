@@ -141,5 +141,6 @@ def generate_manual_state_message():
     return manual_control_state, message
 
 def initialise(module_id):
+    heating_set_off()
     mqtt.subscribe("flat/heating/hallway/temperature", handle_temperature)
     threading.Thread(target=process_timer_management).start()
