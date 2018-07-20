@@ -74,6 +74,7 @@ def process_timer_management():
     while True:
         now = datetime.datetime.now()
         control_mode = storage.get("control_mode")
+        midnight_today = now.replace(hour=0, minute=0, second=0)
         if control_mode == "manual":
             timing = storage.get("manual_control_timing")
             state = storage.get("manual_control_state")
@@ -92,7 +93,41 @@ def process_timer_management():
                 if now > end_timestamp:
                     heating_set_off()
                     storage.set("manual_control_state", "complete")
-                    update_manual_control_message()       
+                    update_manual_control_message()    
+        elif control_mode == "timer":
+            current_day = now.weekday()
+            yesterday = (current_day - 1) % 7
+
+            print("---")
+            timers = storage.get("timers")
+            for timer in timers:
+                # Get start and end time for each timer and conver to
+                # also contain current date. If end_time comes before
+                # start_time assume that we are straddling midnight and
+                # therefore add a day onto end_date so that it occurs
+                # the following day
+                start_time = datetime.datetime.strptime(timer["startTime"],
+                        "%H:%M")
+                start_time = start_time.replace(day=now.day,
+                        month=now.month, year=now.year)
+                
+                end_time = datetime.datetime.strptime(timer["endTime"],
+                        "%H:%M")
+                end_time = end_time.replace(day=now.day,
+                        month=now.month, year=now.year)
+                
+                started_yesterday = False
+                if end_time < start_time:
+                    if midnight_today < now < end_time:
+                        start_time = start_time - datetime.timedelta(days=1)
+                        started_yesterday = True
+                    else:
+                        end_time = end_time + datetime.timedelta(days=1)
+
+                if timer["days"][str(current_day)] or \
+                        (timer["days"][str(yesterday)] and started_yesterday):
+                    print(str(start_time) + " - " + str(end_time))                    
+
 
         time.sleep(1)
 

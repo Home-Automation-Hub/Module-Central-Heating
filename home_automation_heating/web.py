@@ -63,6 +63,7 @@ def action_save_control_mode():
 
 
 def action_save_timers():
+    # TODO: Validate overlapping timers!
     timers = request.get_json()
     
     error = None
