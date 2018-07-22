@@ -56,6 +56,9 @@ def action_save_control_mode():
     if storage.get("control_mode") != control_mode:
         # If control mode has changed, turn off heating
         control.heating_set_off()
+        # Disable the current manual control operation if one exists
+        storage.set("manual_control_state", "complete")
+        control.update_manual_control_message()
         if control_mode == "manual":
             control.set_thermostat_to_manual_temp()
 
