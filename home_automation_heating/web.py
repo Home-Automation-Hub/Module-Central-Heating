@@ -53,6 +53,12 @@ def action_save_control_mode():
     if control_mode not in ["timer", "manual"]:
         return jsonify({"success": False, "message": "Invalid control mode"})
 
+    if storage.get("control_mode") != control_mode:
+        # If control mode has changed, turn off heating
+        control.heating_set_off()
+        if control_mode == "manual":
+            control.set_thermostat_to_manual_temp()
+
     storage.set("control_mode", control_mode)
 
     ws.get_instance().publish("controlModeModified", {
@@ -77,7 +83,7 @@ def action_save_timers():
 
         # Validate that the temperature is a floating point number
         try:
-            float(timer["temperature"])
+            timer["temperature"] = float(timer["temperature"])
         except ValueError:
             error = "Temperature must be a number"
 
@@ -245,6 +251,9 @@ def action_change_thermostat(direction):
     value = storage.get("thermostat_temperature")
     value += change_value
     storage.set("thermostat_temperature", value)
+
+    if (storage.get("control_mode") == "manual"):
+        storage.set("manual_thermostat_temperature", value)
 
     ws.get_instance().publish("thermostat_updated", {
         "value": value

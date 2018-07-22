@@ -98,8 +98,8 @@ def process_timer_management():
             current_day = now.weekday()
             yesterday = (current_day - 1) % 7
 
-            print("---")
             timers = storage.get("timers")
+            valid_timer_found = False
             for timer in timers:
                 # Get start and end time for each timer and conver to
                 # also contain current date. If end_time comes before
@@ -126,10 +126,32 @@ def process_timer_management():
 
                 if timer["days"][str(current_day)] or \
                         (timer["days"][str(yesterday)] and started_yesterday):
-                    print(str(start_time) + " - " + str(end_time))                    
+                    # Timer is valid for the current day, now check if
+                    # we are to turn the heating on or off
+                    if start_time < now < end_time:
+                        if not storage.get("ch_set_on"):
+                            heating_set_on()
 
+                            storage.set("thermostat_temperature",
+                                    timer["temperature"])
+                            ws.get_instance().publish("thermostat_updated", {
+                                "value": timer["temperature"]
+                            })
+
+                        valid_timer_found = True
+
+            if not valid_timer_found:
+                set_thermostat_to_manual_temp()
+                heating_set_off()
 
         time.sleep(1)
+
+def set_thermostat_to_manual_temp():
+    new_temp = storage.get("manual_thermostat_temperature")
+    storage.set("thermostat_temperature", new_temp)
+    ws.get_instance().publish("thermostat_updated", {
+        "value": new_temp
+    })
 
 def generate_manual_state_message():
     manual_control_state=storage.get("manual_control_state")

@@ -21,7 +21,8 @@ def set_default_values():
         # before thermostat turns heating on
         "thermostat_delta_below": 0.5,
         "thermostat_temperature": 21,
-
+        "manual_thermostat_temperature": 21,
+        "control_mode": "manual"
     }
 
     for key in default_values:
