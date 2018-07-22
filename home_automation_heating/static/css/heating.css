@@ -16,3 +16,7 @@
     width: 1%;
     display: inline-block !important;
 }
+
+#timers-form {
+    overflow-x: scroll;
+}
