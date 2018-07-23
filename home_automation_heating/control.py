@@ -74,7 +74,7 @@ def process_timer_management():
     while True:
         now = datetime.datetime.now()
         control_mode = storage.get("control_mode")
-        midnight_today = now.replace(hour=0, minute=0, second=0)
+        
         if control_mode == "manual":
             timing = storage.get("manual_control_timing")
             state = storage.get("manual_control_state")
@@ -101,28 +101,9 @@ def process_timer_management():
             timers = storage.get("timers")
             valid_timer_found = False
             for timer in timers:
-                # Get start and end time for each timer and conver to
-                # also contain current date. If end_time comes before
-                # start_time assume that we are straddling midnight and
-                # therefore add a day onto end_date so that it occurs
-                # the following day
-                start_time = datetime.datetime.strptime(timer["startTime"],
-                        "%H:%M")
-                start_time = start_time.replace(day=now.day,
-                        month=now.month, year=now.year)
-                
-                end_time = datetime.datetime.strptime(timer["endTime"],
-                        "%H:%M")
-                end_time = end_time.replace(day=now.day,
-                        month=now.month, year=now.year)
-                
-                started_yesterday = False
-                if end_time < start_time:
-                    if midnight_today < now < end_time:
-                        start_time = start_time - datetime.timedelta(days=1)
-                        started_yesterday = True
-                    else:
-                        end_time = end_time + datetime.timedelta(days=1)
+                start_time, end_time, started_yesterday =\
+                        start_end_time_to_dates(timer["startTime"],
+                                timer["endTime"], now)
 
                 if timer["days"][str(current_day)] or \
                         (timer["days"][str(yesterday)] and started_yesterday):
@@ -145,6 +126,50 @@ def process_timer_management():
                 heating_set_off()
 
         time.sleep(1)
+
+def start_end_time_to_dates(start_time, end_time, now=None):
+    """
+        Converts start and end times into dates based on the current
+        date
+        :param start_time: Time at which the timer is set to start
+        :param end_time: Time at which the timer is set to end
+        :param now: Datetime representing the current time, will default
+                to output of datetime.datetime.now() if not supplied
+        :return: Tuple of:
+                start_time - Datetime representing the start time
+                end_time - Datetime representing the end time
+                started_yesterday - Boolean, true if timer would have
+                        started during the previous day
+    """
+    # Get start and end time for each timer and convert to
+    # also contain current date. If end_time comes before
+    # start_time assume that we are straddling midnight and
+    # therefore add a day onto end_date so that it occurs
+    # the following day
+    if not now:
+        now = datetime.datetime.now()
+    midnight_today = now.replace(hour=0, minute=0, second=0)
+
+    start_time = datetime.datetime.strptime(start_time,
+            "%H:%M")
+    start_time = start_time.replace(day=now.day,
+            month=now.month, year=now.year)
+
+    end_time = datetime.datetime.strptime(end_time,
+            "%H:%M")
+    end_time = end_time.replace(day=now.day,
+            month=now.month, year=now.year)
+
+    started_yesterday = False
+    if end_time < start_time:
+        if midnight_today < now < end_time:
+            start_time = start_time - datetime.timedelta(days=1)
+            started_yesterday = True
+        else:
+            end_time = end_time + datetime.timedelta(days=1)
+
+    return start_time, end_time, started_yesterday
+
 
 def set_thermostat_to_manual_temp():
     new_temp = storage.get("manual_thermostat_temperature")
