@@ -1,6 +1,6 @@
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
     jQuery("#val-temperature").text(data["latest_reading"]);
-}, "temperature");
+}, "temperature", app.vars.heating_module_id);
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
     jQuery("#heating-state-off").addClass("d-none");
@@ -17,11 +17,11 @@ window.app.registerModuleWebsocketEndpoint(function(key, data) {
     } else {
         jQuery("#heating-state-set-on").removeClass("d-none");
     }
-}, "state");
+}, "state", app.vars.heating_module_id);
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
     jQuery("#thermostat-temperature").text(data.value.toFixed(1));
-}, "thermostat_updated");
+}, "thermostat_updated", app.vars.heating_module_id);
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
     jQuery("#manual-controls-container div.alert").remove();
@@ -39,7 +39,7 @@ window.app.registerModuleWebsocketEndpoint(function(key, data) {
         jQuery("#manual-control-form").addClass("d-block");
         jQuery("#btn-cancel-manual-operation").addClass("d-none");
     }
-}, "index_manual_message");
+}, "index_manual_message", app.vars.heating_module_id);
 
 window.app.registerModuleWebsocketEndpoint(function(key, data) {
     if (data["control_mode"] == "manual") {
@@ -55,12 +55,12 @@ window.app.registerModuleWebsocketEndpoint(function(key, data) {
         jQuery("#control-mode-timer").addClass("active");
         jQuery("#control-mode-timer input").prop("checked", true);
     }
-}, "controlModeModified");
+}, "controlModeModified", app.vars.heating_module_id);
 
 jQuery("#toggle-control-mode input").change(function() {
     var controlMode = jQuery(this).attr("data-mode");
     jQuery.ajax({
-        url: app.vars.moduleBasePath + "/action/save_control_mode/",
+        url: app.vars.heating_module_base_path + "/action/save_control_mode/",
         type: "POST",
         data: JSON.stringify({mode: controlMode}),
         contentType: "application/json",
@@ -91,7 +91,7 @@ jQuery("#select-manual-end-time").change(function() {
 
 jQuery("#submit-manual-control").click(function() {
     jQuery.ajax({
-        url: app.vars.moduleBasePath + "/action/store_manual_control/",
+        url: app.vars.heating_module_base_path + "/action/store_manual_control/",
         type: "POST",
         data: JSON.stringify({
             startTimeType: jQuery("#select-manual-start-time").val(),
@@ -111,12 +111,12 @@ jQuery("#submit-manual-control").click(function() {
 
 jQuery("#btn-cancel-manual-operation").click(function() {
     jQuery.post(
-        app.vars.moduleBasePath + "/action/cancel_manual_operation/"
+        app.vars.heating_module_base_path + "/action/cancel_manual_operation/"
     );
 });
 
 jQuery(".btn-thermostat-adjust").click(function() {
     var direction = jQuery(this).attr("data-direction");
-    jQuery.post(app.vars.moduleBasePath + 
+    jQuery.post(app.vars.heating_module_base_path + 
         "/action/change_thermostat/" + direction + "/");
 });

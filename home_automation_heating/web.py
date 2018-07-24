@@ -8,6 +8,10 @@ import datetime
 import dateutil.parser
 
 def view_index():
+    return render_widget(wrap_module_base_template=True)
+
+def render_widget(wrap_module_base_template=False, module_base_path=None,
+        module_id=None):
     ch_set_on=storage.get("ch_set_on")
     ch_running=storage.get("ch_running")
     control_mode=storage.get("control_mode")
@@ -17,12 +21,29 @@ def view_index():
     manual_control_state, manual_state_message = \
             control.generate_manual_state_message()
 
-    return render_template("heating/index.html", ch_set_on=ch_set_on,
-                           ch_running=ch_running, temperature=temperature,
-                           control_mode=control_mode,
-                           manual_control_state=manual_control_state,
-                           manual_state_message=manual_state_message,
-                           thermostat_temperature=thermostat_temperature)
+    template = "index.html" if wrap_module_base_template else "widget.html"
+
+    template_vars = {
+        "ch_set_on": ch_set_on,
+        "ch_running": ch_running,
+        "temperature": temperature,
+        "control_mode": control_mode,
+        "manual_control_state": manual_control_state,
+        "manual_state_message": manual_state_message,
+        "thermostat_temperature": thermostat_temperature,
+    }
+    
+    if module_base_path:
+        template_vars["module_base_path"] = module_base_path
+    
+    if module_id:
+        template_vars["module_id"] = module_id
+
+    return render_template(f"heating/{template}", **template_vars)
+
+def render_dashboard_widget(module_base_path, module_id):
+    return render_widget(wrap_module_base_template=False,
+            module_base_path=module_base_path, module_id=module_id)
 
 def view_settings():
     num_readings_average = storage.get("num_readings_average")
@@ -280,3 +301,5 @@ def initialise(module_id):
             action_cancel_manual_operation, ["POST"])
     web.add_endpoint(module_id, "/action/change_thermostat/<direction>/",
             action_change_thermostat, ["POST"])
+    web.add_dashboard_widget(module_id, "Central Heating",
+            render_dashboard_widget, width=6)
