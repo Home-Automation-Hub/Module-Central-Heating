@@ -121,6 +121,56 @@ def action_save_timers():
             if state != True and state != False:
                 error = "Day states must be a boolean"
 
+    # Check for overlapping timers, yeah, this is O(n^2), could try to
+    # work out a more efficient way but there probably aren't going to
+    # be enough timers for this to cause a problem ¯\_(ツ)_/¯
+    if not error:
+        print(timers)
+        for t1i in range(0, len(timers)):
+            t1 = timers[t1i]
+            for t2i in range(0, len(timers)):
+                t2 = timers[t2i]
+                if t1i == t2i:
+                    # t1 and t2 represent the same timers so skip
+                    continue
+
+                # Only continue checking if there are days where both
+                # t1 and t2 occur
+                t1_days = [x for x in t1["days"] if t1["days"][x]]
+                t2_days = [x for x in t2["days"] if t2["days"][x]]
+                if len(set(t1_days) & set(t2_days)) == 0:
+                    # Intersection of both lists of days has no elements
+                    # so the timers do not have overlapping days,
+                    # therefore skip this pair
+                    continue
+
+                # Convert to datetimes and correctly handle if a timer
+                # ends the day after it starts
+                t1_start = datetime.datetime.strptime(t1["startTime"], "%H:%M")
+                t1_end = datetime.datetime.strptime(t1["endTime"], "%H:%M")
+
+                if t1_end < t1_start:
+                    t1_end += datetime.timedelta(days=1)
+
+                t2_start = datetime.datetime.strptime(t2["startTime"], "%H:%M")
+                t2_end = datetime.datetime.strptime(t2["endTime"], "%H:%M")
+
+                if t2_end < t2_start:
+                    t2_end += datetime.timedelta(days=1)
+
+                if t1_start < t2_end and t2_start < t1_end:
+                    # We have an overlapping timers so flag this up
+                    print("---")
+                    print(t1)
+                    print(t2)
+                    print(t1i)
+                    print(t2i)
+                    error = ("One or more timers are overlapping. "
+                            "Timers must not overlap!")
+                
+                # TODO: Detect timers that straddle days and handle them
+                # here!
+
     if error:
         return jsonify({"success": False, "message": error})        
 
