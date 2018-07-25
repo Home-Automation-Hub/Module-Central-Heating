@@ -125,7 +125,6 @@ def action_save_timers():
     # work out a more efficient way but there probably aren't going to
     # be enough timers for this to cause a problem ¯\_(ツ)_/¯
     if not error:
-        print(timers)
         for t1i in range(0, len(timers)):
             t1 = timers[t1i]
             for t2i in range(0, len(timers)):
@@ -138,11 +137,22 @@ def action_save_timers():
                 # t1 and t2 occur
                 t1_days = [x for x in t1["days"] if t1["days"][x]]
                 t2_days = [x for x in t2["days"] if t2["days"][x]]
-                if len(set(t1_days) & set(t2_days)) == 0:
-                    # Intersection of both lists of days has no elements
-                    # so the timers do not have overlapping days,
-                    # therefore skip this pair
-                    continue
+                same_days = False
+                if len(set(t1_days) & set(t2_days)) > 0:
+                    # t1 and t2 have at least one day in common
+                    same_days = True
+
+                # Check if there is a chance that t2 may run on a day
+                # following t1
+                consecutive_days = False
+                for t1_day in range(0, 7):
+                    t2_day = (t1_day + 1) % 7
+                    if t1["days"][str(t1_day)] and t2["days"][str(t2_day)]:
+                        consecutive_days = True
+
+                if not (consecutive_days or same_days):
+                    # No chance of these timers overlapping so skip
+                    continue                
 
                 # Convert to datetimes and correctly handle if a timer
                 # ends the day after it starts
@@ -158,18 +168,29 @@ def action_save_timers():
                 if t2_end < t2_start:
                     t2_end += datetime.timedelta(days=1)
 
-                if t1_start < t2_end and t2_start < t1_end:
-                    # We have an overlapping timers so flag this up
-                    print("---")
-                    print(t1)
-                    print(t2)
-                    print(t1i)
-                    print(t2i)
-                    error = ("One or more timers are overlapping. "
-                            "Timers must not overlap!")
-                
-                # TODO: Detect timers that straddle days and handle them
-                # here!
+                def check_overlap(t1_start, t1_end, t2_start, t2_end):
+                    if t1_start < t2_end and t2_start < t1_end:
+                        # We have an overlapping timers so flag this up
+                        return ("One or more timers are overlapping. "
+                                "Timers must not overlap!")
+                    return None
+
+                if same_days:
+                    error = check_overlap(t1_start, t1_end, t2_start,
+                            t2_end) or error
+            
+
+                if consecutive_days:
+                    # We have found a situation where t2 may run on a
+                    # day immediately following t1 so add 1 day to the
+                    # start and end dates of t2 then check again for
+                    # overlaps
+                    t2_start += datetime.timedelta(days=1)
+                    t2_end += datetime.timedelta(days=1)
+
+                    error = check_overlap(t1_start, t1_end, t2_start,
+                        t2_end) or error
+
 
     if error:
         return jsonify({"success": False, "message": error})        
