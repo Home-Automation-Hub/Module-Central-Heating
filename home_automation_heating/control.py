@@ -185,25 +185,23 @@ def generate_manual_state_message():
     if not (manual_control_state or manual_control_timing):
         return None, None
 
-    try:
-        timestamp = dateutil.parser.parse(manual_control_timing.get("start"))
+    manual_start = manual_control_timing.get("start")
+    if manual_start and manual_start != "immediate":
+        timestamp = dateutil.parser.parse(manual_start)
 
         date_format = "%H:%M"
         if timestamp.date() != datetime.datetime.now().date():
             date_format += " (on %Y-%m-%d)"
         manual_control_timing["start"] = timestamp.strftime(date_format)
-    except ValueError:
-        pass # This will occur if the field is set to "immediate"
 
-    try:
-        timestamp = dateutil.parser.parse(manual_control_timing.get("end"))
+    manual_end = manual_control_timing.get("end")
+    if manual_end and manual_end != "indefinite":
+        timestamp = dateutil.parser.parse(manual_end)
 
         date_format = "%H:%M"
         if timestamp.date() != datetime.datetime.now().date():
             date_format += " (on %Y-%m-%d)"
         manual_control_timing["end"] = timestamp.strftime(date_format)
-    except ValueError:
-        pass # This will occur if the field is set to "indefinite"
 
     message = "Heating is off"
     if manual_control_state in ["running", "pending"]:
