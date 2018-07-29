@@ -11,4 +11,5 @@ setup(
         "python-dateutil==2.7.3"
     ],
     packages=["home_automation_heating"],
+    include_package_data=True,
 )

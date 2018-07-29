@@ -1,0 +1,2 @@
+recursive-include home_automation_heating/templates *
+recursive-include home_automation_heating/static *
