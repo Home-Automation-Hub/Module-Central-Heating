@@ -62,6 +62,7 @@ def handle_temperature(topic, message):
     ws.get_instance().publish("temperature", {
         "latest_reading": temperature
     })
+    mqtt.publish("hub/module/heating/averaged_temperature", temperature)
 
 def update_manual_control_message():
     state, message = generate_manual_state_message()
