@@ -16,10 +16,10 @@ def set_default_values():
         "num_readings_average": 6,
         # How far above the set temperature the environment must be
         # before thermostat turns heating off
-        "thermostat_delta_above": 0.5,
+        "thermostat_delta_above": 0.2,
         # How far below the set temperature the environment must be
         # before thermostat turns heating on
-        "thermostat_delta_below": 0.5,
+        "thermostat_delta_below": 0.2,
         "thermostat_temperature": 21,
         "manual_thermostat_temperature": 21,
         "control_mode": "manual"
